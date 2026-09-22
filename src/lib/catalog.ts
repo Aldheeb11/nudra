@@ -26,16 +26,17 @@ export interface Category {
 }
 
 export const CATEGORIES: Category[] = [
-  { _id: 'cat_electronics',  name: 'Electronics',        slug: 'electronics',     icon: '📱' },
-  { _id: 'cat_fashion',      name: 'Fashion',            slug: 'fashion',         icon: '👗' },
-  { _id: 'cat_home',         name: 'Home & Garden',      slug: 'home-garden',     icon: '🏠' },
-  { _id: 'cat_sports',       name: 'Sports & Outdoors',  slug: 'sports-outdoors', icon: '⚽' },
-  { _id: 'cat_beauty',       name: 'Beauty & Health',    slug: 'beauty-health',   icon: '💄' },
-  { _id: 'cat_kids',         name: 'Kids & Toys',        slug: 'kids-toys',       icon: '🧸' },
-  { _id: 'cat_auto',         name: 'Automotive',         slug: 'automotive',      icon: '🚗' },
-  { _id: 'cat_tools',        name: 'Tools & DIY',        slug: 'tools-diy',       icon: '🔧' },
+  { _id: 'cat_electronics',  name: 'إلكترونيات',           slug: 'electronics',     icon: '📱' },
+  { _id: 'cat_fashion',      name: 'أزياء وملابس',          slug: 'fashion',         icon: '👗' },
+  { _id: 'cat_home',         name: 'المنزل والحديقة',       slug: 'home-garden',     icon: '🏠' },
+  { _id: 'cat_sports',       name: 'رياضة وهواء طلق',      slug: 'sports-outdoors', icon: '⚽' },
+  { _id: 'cat_beauty',       name: 'الجمال والصحة',         slug: 'beauty-health',   icon: '💄' },
+  { _id: 'cat_kids',         name: 'الأطفال والألعاب',      slug: 'kids-toys',       icon: '🧸' },
+  { _id: 'cat_auto',         name: 'السيارات',              slug: 'automotive',      icon: '🚗' },
+  { _id: 'cat_tools',        name: 'الأدوات وأعمال يدوية', slug: 'tools-diy',       icon: '🔧' },
 ]
 
+// Sample AliExpress affiliate products (replaced by live API once approved)
 export const SAMPLE_PRODUCTS: Product[] = [
   {
     _id: 'prod_001',
