@@ -1,99 +1,54 @@
+/**
+ * Wix Headless client (auth + forms + blog only)
+ * Product/category data comes from catalog.ts (static) or AliExpress API
+ */
 import { createClient, OAuthStrategy } from '@wix/sdk'
-import { items }       from '@wix/data'
 import { submissions } from '@wix/forms'
 import { posts }       from '@wix/blog'
 
-// Wix Headless client — self-managed (Next.js on Vercel)
+// Re-export data types from catalog
+export type { Product, Category } from './catalog'
+export {
+  CATEGORIES,
+  SAMPLE_PRODUCTS,
+  queryProducts,
+  getFeatured,
+} from './catalog'
+
+// Wix client — used for auth, forms & blog only
 export const wixClient = createClient({
-  modules: { items, submissions, posts },
+  modules: { submissions, posts },
   auth: OAuthStrategy({
     clientId: process.env.WIX_CLIENT_ID!,
   }),
 })
 
-// ── CMS collection IDs ───────────────────────────────────────────────────────
-export const COLLECTIONS = {
-  PRODUCTS:   'Products',
-  CATEGORIES: 'Categories',
-} as const
+// ── Convenience wrappers (delegates to catalog) ───────────────────────────────
+import { queryProducts as _query, getFeatured as _featured, CATEGORIES as _cats } from './catalog'
+import type { Product, Category } from './catalog'
 
-// ── Types ───────────────────────────────────────────────────────────────────
-export interface Product {
-  _id:          string
-  title:        string
-  description?: string
-  price:        number
-  image?:       string
-  affiliateUrl: string
-  category?:    string
-  aliExpressId: string
-  rating?:      number
-  isFeatured?:  boolean
-}
-
-export interface Category {
-  _id:  string
-  name: string
-  slug: string
-  icon?: string
-}
-
-// ── Query helpers ────────────────────────────────────────────────────────────
-
-/** Fetch featured products (ISR-safe, max 20) */
-export async function getFeaturedProducts(): Promise<Product[]> {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const result = await (wixClient.items as any)
-    .query(COLLECTIONS.PRODUCTS)
-    .eq('isFeatured', true)
-    .limit(20)
-    .find()
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return (result.items ?? []) as Product[]
-}
-
-/** Fetch all categories */
-export async function getCategories(): Promise<Category[]> {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const result = await (wixClient.items as any)
-    .query(COLLECTIONS.CATEGORIES)
-    .limit(100)
-    .find()
-
-  return (result.items ?? []) as Category[]
-}
-
-/** Paginated product list (cursor-based) */
 export async function getProducts(opts?: {
   categoryId?: string
   cursor?:     string
   limit?:      number
 }): Promise<{ products: Product[]; nextCursor?: string }> {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let q = (wixClient.items as any)
-    .query(COLLECTIONS.PRODUCTS)
-    .limit(opts?.limit ?? 24)
-
-  if (opts?.categoryId) q = q.eq('category', opts.categoryId)
-  if (opts?.cursor)     q = q.skipTo(opts.cursor)
-
-  const result = await q.find()
-
+  const numCursor = opts?.cursor ? parseInt(opts.cursor, 10) : undefined
+  const result = _query({ ...opts, cursor: numCursor })
   return {
-    products:   (result.items ?? []) as Product[],
-    nextCursor: result.hasNext?.() ? result.cursors?.next : undefined,
+    products:   result.products,
+    nextCursor: result.nextCursor !== undefined ? String(result.nextCursor) : undefined,
   }
 }
 
-/** Single product by aliExpressId */
-export async function getProductByAliId(aliId: string): Promise<Product | null> {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const result = await (wixClient.items as any)
-    .query(COLLECTIONS.PRODUCTS)
-    .eq('aliExpressId', aliId)
-    .limit(1)
-    .find()
+export async function getFeaturedProducts(): Promise<Product[]> {
+  return _featured()
+}
 
-  return (result.items?.[0] ?? null) as Product | null
+export async function getCategories(): Promise<Category[]> {
+  return _cats
+}
+
+export async function getProductByAliId(aliId: string): Promise<Product | null> {
+  const { SAMPLE_PRODUCTS } = await import('./catalog')
+  return SAMPLE_PRODUCTS.find((p) => p.aliExpressId === aliId) ?? null
 }
