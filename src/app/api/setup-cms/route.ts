@@ -1,38 +1,23 @@
-import { NextResponse } from 'next/server';
+/**
+ * Setup endpoint — verifies data layer is ready.
+ * Nudra uses a static catalog (src/lib/catalog.ts) instead of Wix CMS.
+ * Call GET /api/setup-cms to confirm everything is wired correctly.
+ * DELETE this route before going to production.
+ */
+import { NextResponse } from 'next/server'
+import { CATEGORIES, SAMPLE_PRODUCTS } from '@/lib/catalog'
 
-export const runtime = 'edge';
-
-async function createCollection(id: string, displayName: string, fields: object[]) {
-  const res = await fetch('https://www.wixapis.com/wix-data/v2/collections', {
-    method: 'POST',
-    headers: {
-      'Authorization': process.env.WIX_API_KEY!,
-      'wix-site-id': process.env.WIX_SITE_ID!,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ collection: { id, displayName, fields } }),
-  });
-  const body = await res.json();
-  return { id, status: res.status, ok: res.ok, body };
-}
+export const runtime = 'edge'
 
 export async function GET() {
-  const results = await Promise.all([
-    createCollection('Products', 'Products', [
-      { key: 'name', displayName: 'Name', type: 'TEXT' },
-      { key: 'description', displayName: 'Description', type: 'TEXT' },
-      { key: 'price', displayName: 'Price', type: 'NUMBER' },
-      { key: 'image', displayName: 'Image', type: 'IMAGE' },
-      { key: 'aliexpressId', displayName: 'AliExpress ID', type: 'TEXT' },
-      { key: 'category', displayName: 'Category', type: 'TEXT' },
-      { key: 'inStock', displayName: 'In Stock', type: 'BOOLEAN' },
-      { key: 'affiliateUrl', displayName: 'Affiliate URL', type: 'URL' },
-    ]),
-    createCollection('Categories', 'Categories', [
-      { key: 'name', displayName: 'Name', type: 'TEXT' },
-      { key: 'slug', displayName: 'Slug', type: 'TEXT' },
-      { key: 'image', displayName: 'Image', type: 'IMAGE' },
-    ]),
-  ]);
-  return NextResponse.json({ results });
+  return NextResponse.json({
+    ok: true,
+    message: 'Data layer ready (static catalog). Wix CMS not required.',
+    categories: CATEGORIES.length,
+    sampleProducts: SAMPLE_PRODUCTS.length,
+    catalogDetails: {
+      categories: CATEGORIES.map((c) => ({ id: c._id, name: c.name, slug: c.slug })),
+      products: SAMPLE_PRODUCTS.map((p) => ({ id: p._id, title: p.title, category: p.category })),
+    },
+  })
 }
