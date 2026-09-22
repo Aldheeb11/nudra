@@ -15,9 +15,9 @@ export function Navbar() {
 
         {/* Desktop nav */}
         <nav className="hidden md:flex items-center gap-6 text-sm text-[var(--muted)]">
-          <Link href="/products" className="hover:text-[var(--text)] transition-colors">المنتجاڪ</Link>
-          <Link href="/blog"     className="hover:text-[var(--text)] transition-colors">المدونة</Link>
-          <Link href="/contact"  className="hover:text-[var(--text)] transition-colors">تواصل</Link>
+          <Link href="/products" className="hover:text-[var(--text)] transition-colors">المنتجات</Link>
+          <Link href="/products?category=electronics" className="hover:text-[var(--text)] transition-colors">إلكترونيات</Link>
+          <Link href="/products?category=home-garden" className="hover:text-[var(--text)] transition-colors">المنزل</Link>
         </nav>
 
         {/* Search + Mobile toggle */}
@@ -41,9 +41,10 @@ export function Navbar() {
       {/* Mobile menu */}
       {open && (
         <div className="md:hidden border-t border-[var(--bg-border)] px-4 py-3 flex flex-col gap-3 text-sm text-[var(--muted)]">
-          <Link href="/products" onClick={() => setOpen(false)}>المنتجات</Link>
-          <Link href="/blog"     onClick={() => setOpen(false)}>المدونة</Link>
-          <Link href="/contact"  onClick={() => setOpen(false)}>تواصل</Link>
+          <Link href="/products"                        onClick={() => setOpen(false)}>المنتجات</Link>
+          <Link href="/products?category=electronics"  onClick={() => setOpen(false)}>إلكترونيات</Link>
+          <Link href="/products?category=home-garden"  onClick={() => setOpen(false)}>المنزل</Link>
+          <Link href="/products?category=beauty-health" onClick={() => setOpen(false)}>الجمال والصحة</Link>
         </div>
       )}
     </header>
