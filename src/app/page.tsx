@@ -24,11 +24,11 @@ export default async function HomePage() {
             منصة اكتشاف المنتجات
           </p>
           <h1 className="text-4xl md:text-5xl font-bold text-[var(--text)] leading-tight mb-4">
-            أفضل منتجات المنسل<br />
+            إلكترونيات، أزياء، منزل وأكثر<br />
             <span className="text-[var(--accent)]">بأسعار لا تُقاوَم</span>
           </h1>
           <p className="text-[var(--muted)] text-base max-w-md mx-auto mb-8">
-            نختار لك أفضل المنتجات من AliExpress ونقارن الأسعار يومياً
+            نختار لك أفضل المنتجات من AliExpress في 8 تصنيفات ونقارن الأسعار يومياً
           </p>
           <a
             href="/products"
@@ -64,7 +64,7 @@ export default async function HomePage() {
         {/* ── Featured Products ── */}
         <section>
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-lg font-semibold text-[var(--text)]">منتجات مميسة</h2>
+            <h2 className="text-lg font-semibold text-[var(--text)]">منتجات مميزة</h2>
             <a href="/products" className="text-xs text-[var(--accent)] hover:underline">
               عرض الكل →
             </a>
@@ -95,7 +95,7 @@ export default async function HomePage() {
 
         {/* ── Footer note ── */}
         <p className="mt-16 text-center text-[10px] text-[var(--muted)]">
-          * روابط AliExpress تصتوي على رابط إحالة. السعر لا يتغير عليك.
+          * روابط AliExpress تحتوي على رابط إحالة. السعر لا يتغير عليك.
         </p>
       </main>
     </>
