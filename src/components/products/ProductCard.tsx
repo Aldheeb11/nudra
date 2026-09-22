@@ -64,7 +64,7 @@ export function ProductCard({ product, priority = false }: Props) {
           </p>
         )}
 
-        <div className="mt-auto flex flex-col gap-0.5">
+        <div className="mt-auto flex flex-col gap-2">
           <div className="flex items-center gap-2">
             <span className="text-sm font-bold text-[var(--green)]">
               ${product.price.toFixed(2)}
@@ -75,8 +75,8 @@ export function ProductCard({ product, priority = false }: Props) {
               </span>
             )}
           </div>
-          <span className="text-[10px] self-start px-2 py-0.5 rounded-full bg-[var(--accent)]/10 text-[var(--accent)] border border-[var(--accent)]/20">
-            AliExpress ↗
+          <span className="w-full text-center text-xs font-semibold py-1.5 rounded-lg bg-[var(--accent)] text-[#06080E] group-hover:brightness-110 transition-all">
+            اشترِ من AliExpress ↗
           </span>
         </div>
       </div>
