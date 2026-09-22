@@ -9,6 +9,8 @@ const nextConfig: NextConfig = {
       // AliExpress product images
       { protocol: 'https', hostname: '*.alicdn.com' },
       { protocol: 'https', hostname: 'ae01.alicdn.com' },
+      // Unsplash (sample images until AliExpress API approved)
+      { protocol: 'https', hostname: 'images.unsplash.com' },
     ],
     formats: ['image/avif', 'image/webp'],
     minimumCacheTTL: 86400, // 24h CDN cache for product images
