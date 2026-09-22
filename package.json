@@ -1,0 +1,33 @@
+{
+  "name": "nudra",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start"
+  },
+  "dependencies": {
+    "@tanstack/react-virtual": "^3.14.13",
+    "@wix/blog": "^1.0.661",
+    "@wix/data": "^1.0.522",
+    "@wix/forms": "^1.0.520",
+    "@wix/sdk": "^1.21.16",
+    "bull": "^4.16.5",
+    "dotenv": "^18.0.1",
+    "ioredis": "^6.0.0",
+    "next": "16.3.5",
+    "node-cron": "^4.6.0",
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
+    "swr": "^2.5.1"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "tailwindcss": "^4",
+    "typescript": "^5"
+  }
+}
