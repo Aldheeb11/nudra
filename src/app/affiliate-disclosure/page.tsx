@@ -1,10 +1,12 @@
 import type { Metadata } from 'next'
 import { LegalPage } from '@/components/layout/LegalPage'
+import { pageMetadata } from '@/lib/site'
 
-export const metadata: Metadata = {
-  title: 'إفصاح الإحالة',
+export const metadata: Metadata = pageMetadata({
+  title:       'إفصاح الإحالة',
   description: 'كيف يحصل Nudra على عمولات من روابط الإحالة إلى AliExpress.',
-}
+  path:        '/affiliate-disclosure',
+})
 
 export default function AffiliateDisclosurePage() {
   return (

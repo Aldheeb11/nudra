@@ -1,10 +1,12 @@
 import type { Metadata } from 'next'
 import { LegalPage } from '@/components/layout/LegalPage'
+import { pageMetadata } from '@/lib/site'
 
-export const metadata: Metadata = {
-  title: 'شروط الاستخدام',
+export const metadata: Metadata = pageMetadata({
+  title:       'شروط الاستخدام',
   description: 'شروط استخدام موقع Nudra.',
-}
+  path:        '/terms',
+})
 
 export default function TermsPage() {
   return (

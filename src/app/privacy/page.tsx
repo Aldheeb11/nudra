@@ -1,12 +1,13 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { LegalPage } from '@/components/layout/LegalPage'
-import { contactEmail } from '@/lib/site'
+import { contactEmail, pageMetadata } from '@/lib/site'
 
-export const metadata: Metadata = {
-  title: 'سياسة الخصوصية',
+export const metadata: Metadata = pageMetadata({
+  title:       'سياسة الخصوصية',
   description: 'ما البيانات التي يعالجها موقع Nudra وكيف تُستخدم.',
-}
+  path:        '/privacy',
+})
 
 export default function PrivacyPage() {
   const email = contactEmail()

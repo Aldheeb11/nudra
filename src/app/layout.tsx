@@ -1,19 +1,30 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
+import { SITE_DESCRIPTION, SITE_NAME, SITE_URL } from '@/lib/site'
 import { Navbar } from '@/components/layout/Navbar'
 import { Footer } from '@/components/layout/Footer'
 import './globals.css'
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://nudra-psi.vercel.app'),
-  title:       { default: 'Nudra — اكتشف أفضل المنتجات', template: '%s — Nudra' },
-  description: 'منصة اكتشاف منتجات AliExpress بأفضل الأسعار — إلكترونيات، أزياء، منزل، رياضة وأكثر',
+  metadataBase: new URL(SITE_URL),
+  title:       { default: `${SITE_NAME} — اكتشف أفضل المنتجات`, template: `%s — ${SITE_NAME}` },
+  description: SITE_DESCRIPTION,
+  applicationName: SITE_NAME,
+  // og:image / twitter:image come from app/opengraph-image.png
   openGraph: {
-    type:   'website',
-    locale: 'ar_AE',
-    siteName: 'Nudra',
-    images: [{ url: '/og-image.png', width: 1200, height: 630, alt: 'Nudra — أفضل منتجات AliExpress' }],
+    type:     'website',
+    locale:   'ar_AE',
+    siteName: SITE_NAME,
+    title:    `${SITE_NAME} — اكتشف أفضل المنتجات`,
+    description: SITE_DESCRIPTION,
+    url:      '/',
   },
   twitter: { card: 'summary_large_image' },
+  formatDetection: { telephone: false },
+}
+
+export const viewport: Viewport = {
+  themeColor:  '#0A0C10',
+  colorScheme: 'dark',
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

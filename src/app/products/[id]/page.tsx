@@ -5,6 +5,7 @@ import { notFound } from 'next/navigation'
 import { ProductCard } from '@/components/products/ProductCard'
 import { discountPercent, formatCount, formatPrice } from '@/lib/format'
 import { getCategories, getProductById, getProducts } from '@/lib/products'
+import { absoluteUrl, jsonLd, pageMetadata } from '@/lib/site'
 
 interface Props {
   params: Promise<{ id: string }>
@@ -14,13 +15,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params
   const product = await getProductById(id)
   if (!product) return { title: 'المنتج غير موجود', robots: { index: false } }
-  const description = `${product.title} بسعر ${formatPrice(product.price)} على AliExpress`
-  return {
-    title: product.title,
-    description,
-    alternates: { canonical: `/products/${product._id}` },
-    openGraph: { title: product.title, description, images: product.image ? [{ url: product.image }] : undefined },
-  }
+
+  return pageMetadata({
+    title:       product.title,
+    description: `${product.title} بسعر ${formatPrice(product.price)} على AliExpress. قارن السعر والتقييم واشترِ مباشرة.`,
+    path:        `/products/${product._id}`,
+    image:       product.image || undefined,
+  })
 }
 
 export default async function ProductPage({ params }: Props) {
@@ -37,26 +38,43 @@ export default async function ProductPage({ params }: Props) {
   const category = categories.find((c) => c.slug === product.category)
   const discount = discountPercent(product)
 
-  const jsonLd = {
-    '@context': 'https://schema.org',
-    '@type':    'Product',
-    name:       product.title,
-    image:      product.image || undefined,
-    sku:        product.aliExpressId,
-    offers: {
-      '@type':       'Offer',
-      price:         product.price.toFixed(2),
-      priceCurrency: 'USD',
-      availability:  'https://schema.org/InStock',
-      url:           product.affiliateUrl,
+  const url = absoluteUrl(`/products/${product._id}`)
+  const structuredData = [
+    {
+      '@context': 'https://schema.org',
+      '@type':    'Product',
+      name:       product.title,
+      url,
+      image:      product.image || undefined,
+      sku:        product.aliExpressId,
+      category:   category?.name,
+      offers: {
+        '@type':       'Offer',
+        price:         product.price.toFixed(2),
+        priceCurrency: 'USD',
+        availability:  'https://schema.org/InStock',
+        url:           product.affiliateUrl,
+        seller:        { '@type': 'Organization', name: 'AliExpress' },
+      },
     },
-  }
+    {
+      '@context': 'https://schema.org',
+      '@type':    'BreadcrumbList',
+      itemListElement: [
+        { '@type': 'ListItem', position: 1, name: 'الرئيسية', item: absoluteUrl('/') },
+        { '@type': 'ListItem', position: 2, name: 'المنتجات', item: absoluteUrl('/products') },
+        ...(category
+          ? [{ '@type': 'ListItem', position: 3, name: category.name, item: absoluteUrl(`/category/${category.slug}`) }]
+          : []),
+      ],
+    },
+  ]
 
   return (
     <main className="mx-auto max-w-6xl px-4 pb-16">
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, '\\u003c') }}
+        dangerouslySetInnerHTML={{ __html: jsonLd(structuredData) }}
       />
 
       <nav aria-label="مسار التنقل" className="py-6 text-xs text-[var(--muted)]">

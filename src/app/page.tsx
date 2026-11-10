@@ -1,6 +1,9 @@
 import Link from 'next/link'
 import { ProductCard } from '@/components/products/ProductCard'
 import { getFeaturedProducts, getCategories } from '@/lib/products'
+import { SITE_NAME, SITE_URL, jsonLd } from '@/lib/site'
+
+export const metadata = { alternates: { canonical: '/' } }
 
 // Dynamic — best sellers are read from the database at request time
 export const dynamic = 'force-dynamic'
@@ -14,6 +17,23 @@ export default async function HomePage() {
 
   return (
     <main className="mx-auto max-w-6xl px-4 pb-16">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: jsonLd({
+            '@context': 'https://schema.org',
+            '@type':    'WebSite',
+            name:       SITE_NAME,
+            url:        SITE_URL,
+            inLanguage: 'ar',
+            potentialAction: {
+              '@type':       'SearchAction',
+              target:        `${SITE_URL}/products?q={search_term_string}`,
+              'query-input': 'required name=search_term_string',
+            },
+          }),
+        }}
+      />
 
       {/* ── Hero ── */}
       <section className="py-16 text-center">

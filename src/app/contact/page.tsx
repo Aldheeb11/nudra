@@ -1,9 +1,9 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { LegalPage } from '@/components/layout/LegalPage'
-import { contactEmail } from '@/lib/site'
+import { contactEmail, pageMetadata } from '@/lib/site'
 
-export const metadata: Metadata = { title: 'تواصل معنا' }
+export const metadata: Metadata = pageMetadata({ title: 'تواصل معنا', path: '/contact' })
 export const dynamic = 'force-dynamic' // reads CONTACT_EMAIL at request time
 
 export default function ContactPage() {

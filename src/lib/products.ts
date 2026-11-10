@@ -131,3 +131,27 @@ export async function getFeaturedProducts(limit = 8): Promise<Product[]> {
   const { products } = await getProducts({ limit })
   return products
 }
+
+/** Product URLs (newest first, capped) + last update per non-empty category, for sitemap.xml */
+export async function getSitemapEntries(limit = 5000): Promise<{
+  products: { id: string; updatedAt?: Date }[]
+  categories: Map<string, Date | undefined>
+}> {
+  if (!hasDatabase()) {
+    return {
+      products:   SAMPLE_PRODUCTS.map((p) => ({ id: p._id })),
+      categories: new Map(SAMPLE_PRODUCTS.map((p) => [p.category, undefined])),
+    }
+  }
+  const sql = getSql()
+  const [products, categories] = await Promise.all([
+    sql<{ id: string; updated_at: Date }[]>`
+      SELECT id, updated_at FROM products ORDER BY updated_at DESC, id LIMIT ${limit}`,
+    sql<{ category: string; updated_at: Date }[]>`
+      SELECT category, max(updated_at) AS updated_at FROM products GROUP BY category`,
+  ])
+  return {
+    products:   products.map((p) => ({ id: p.id, updatedAt: p.updated_at })),
+    categories: new Map(categories.map((c) => [c.category, c.updated_at])),
+  }
+}

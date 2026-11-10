@@ -1,11 +1,13 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { LegalPage } from '@/components/layout/LegalPage'
+import { pageMetadata } from '@/lib/site'
 
-export const metadata: Metadata = {
-  title: 'من نحن',
+export const metadata: Metadata = pageMetadata({
+  title:       'من نحن',
   description: 'Nudra منصة عربية لاكتشاف منتجات AliExpress الأكثر مبيعاً.',
-}
+  path:        '/about',
+})
 
 export default function AboutPage() {
   return (
