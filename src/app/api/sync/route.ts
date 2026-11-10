@@ -1,15 +1,24 @@
 /**
  * Daily AliExpress → Postgres sync, triggered by Vercel Cron (see vercel.json).
  */
+import { createHash, timingSafeEqual } from 'node:crypto'
 import { NextRequest, NextResponse } from 'next/server'
 import { runSync } from '@/lib/sync'
 
 export const maxDuration = 300
 
-export async function GET(req: NextRequest) {
+const sha256 = (v: string) => createHash('sha256').update(v).digest()
+
+/** Constant-time check; fails closed when CRON_SECRET is not configured */
+function isAuthorized(req: NextRequest): boolean {
   const secret = process.env.CRON_SECRET
-  // Fail closed: without a configured secret nobody may trigger the sync
-  if (!secret || req.headers.get('authorization') !== `Bearer ${secret}`) {
+  if (!secret) return false
+  const given = req.headers.get('authorization') ?? ''
+  return timingSafeEqual(sha256(given), sha256(`Bearer ${secret}`))
+}
+
+export async function GET(req: NextRequest) {
+  if (!isAuthorized(req)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
