@@ -1,6 +1,6 @@
 /**
  * Setup endpoint — verifies data layer is ready.
- * Nudra uses a static catalog (src/lib/catalog.ts) instead of Wix CMS.
+ * Reports the static categories + local-dev sample catalog.
  * Call GET /api/setup-cms to confirm everything is wired correctly.
  * DELETE this route before going to production.
  */
@@ -12,7 +12,7 @@ export const runtime = 'edge'
 export async function GET() {
   return NextResponse.json({
     ok: true,
-    message: 'Data layer ready (static catalog). Wix CMS not required.',
+    message: 'Static catalog loaded.',
     categories: CATEGORIES.length,
     sampleProducts: SAMPLE_PRODUCTS.length,
     catalogDetails: {

@@ -1,5 +1,5 @@
 import Image from 'next/image'
-import type { Product } from '@/lib/wix'
+import type { Product } from '@/lib/products'
 
 interface Props {
   product: Product

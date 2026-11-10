@@ -1,7 +1,7 @@
 /**
- * Static product & category catalog for Nudra affiliate store.
- * Products will be replaced by live AliExpress API data once approved.
- * Categories are curated here and synced to Redis on /api/setup-db call.
+ * Categories + the Product type shared across the app.
+ * Live products come from Postgres (filled by the AliExpress sync, see sync.ts).
+ * SAMPLE_PRODUCTS is only a local-dev fallback used when DATABASE_URL is unset.
  */
 export interface Product {
   _id: string
@@ -11,6 +11,7 @@ export interface Product {
   originalPrice?: number
   image: string
   affiliateUrl: string
+  /** Category slug (see CATEGORIES) */
   category: string
   aliExpressId: string
   rating?: number
@@ -36,7 +37,7 @@ export const CATEGORIES: Category[] = [
   { _id: 'cat_tools',        name: 'الأدوات وأعمال يدوية', slug: 'tools-diy',       icon: '🔧' },
 ]
 
-// Sample AliExpress affiliate products (replaced by live API once approved)
+// Placeholder products for local development only — not real listings
 export const SAMPLE_PRODUCTS: Product[] = [
   {
     _id: 'prod_001',
@@ -46,7 +47,7 @@ export const SAMPLE_PRODUCTS: Product[] = [
     originalPrice: 29.99,
     image: 'https://images.unsplash.com/photo-1590658268037-6bf12165a8df?w=400&q=80',
     affiliateUrl: 'https://s.click.aliexpress.com/e/_DdJ9WPv',
-    category: 'cat_electronics',
+    category: 'electronics',
     aliExpressId: '1005003531234567',
     rating: 4.7,
     isFeatured: true,
@@ -60,7 +61,7 @@ export const SAMPLE_PRODUCTS: Product[] = [
     originalPrice: 45.00,
     image: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400&q=80',
     affiliateUrl: 'https://s.click.aliexpress.com/e/_DcK8VNu',
-    category: 'cat_electronics',
+    category: 'electronics',
     aliExpressId: '1005004123456789',
     rating: 4.5,
     isFeatured: true,
@@ -74,7 +75,7 @@ export const SAMPLE_PRODUCTS: Product[] = [
     originalPrice: 35.00,
     image: 'https://images.unsplash.com/photo-1603302576837-37561b2e2302?w=400&q=80',
     affiliateUrl: 'https://s.click.aliexpress.com/e/_DbL7TMt',
-    category: 'cat_electronics',
+    category: 'electronics',
     aliExpressId: '1005002987654321',
     rating: 4.6,
     isFeatured: false,
@@ -88,7 +89,7 @@ export const SAMPLE_PRODUCTS: Product[] = [
     originalPrice: 22.00,
     image: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&q=80',
     affiliateUrl: 'https://s.click.aliexpress.com/e/_DaM6SLs',
-    category: 'cat_home',
+    category: 'home-garden',
     aliExpressId: '1005005876543210',
     rating: 4.4,
     isFeatured: true,
@@ -102,7 +103,7 @@ export const SAMPLE_PRODUCTS: Product[] = [
     originalPrice: 19.99,
     image: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=400&q=80',
     affiliateUrl: 'https://s.click.aliexpress.com/e/_D9N5RKr',
-    category: 'cat_sports',
+    category: 'sports-outdoors',
     aliExpressId: '1005006765432109',
     rating: 4.8,
     isFeatured: true,
@@ -116,39 +117,10 @@ export const SAMPLE_PRODUCTS: Product[] = [
     originalPrice: 18.00,
     image: 'https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?w=400&q=80',
     affiliateUrl: 'https://s.click.aliexpress.com/e/_D8P4QJq',
-    category: 'cat_beauty',
+    category: 'beauty-health',
     aliExpressId: '1005007654321098',
     rating: 4.6,
     isFeatured: false,
     soldCount: 9876,
   },
 ]
-
-/** Find products filtered by category, with cursor pagination.
- *  categoryId can be either the _id (cat_electronics) or slug (electronics) */
-export function queryProducts(opts?: {
-  categoryId?: string
-  cursor?: number
-  limit?: number
-}): { products: Product[]; nextCursor?: number } {
-  const limit = opts?.limit ?? 24
-  const cursor = opts?.cursor ?? 0
-
-  let items = [...SAMPLE_PRODUCTS]
-  if (opts?.categoryId) {
-    // Resolve slug → _id if needed
-    const resolvedId =
-      CATEGORIES.find((c) => c.slug === opts.categoryId)?._id ?? opts.categoryId
-    items = items.filter((p) => p.category === resolvedId)
-  }
-
-  const page = items.slice(cursor, cursor + limit)
-  return {
-    products: page,
-    nextCursor: cursor + limit < items.length ? cursor + limit : undefined,
-  }
-}
-
-export function getFeatured(): Product[] {
-  return SAMPLE_PRODUCTS.filter((p) => p.isFeatured)
-}

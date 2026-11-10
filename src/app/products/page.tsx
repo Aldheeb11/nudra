@@ -1,6 +1,6 @@
 import { Navbar }      from '@/components/layout/Navbar'
 import { ProductGrid } from '@/components/products/ProductGrid'
-import { getProducts, getCategories } from '@/lib/wix'
+import { getProducts, getCategories } from '@/lib/products'
 
 export const revalidate = 3600 // 1h for product list
 
@@ -12,7 +12,7 @@ export default async function ProductsPage({ searchParams }: Props) {
   const { category } = await searchParams
 
   const [{ products, nextCursor }, categories] = await Promise.all([
-    getProducts({ categoryId: category, limit: 24 }),
+    getProducts({ category, limit: 24 }),
     getCategories(),
   ])
 

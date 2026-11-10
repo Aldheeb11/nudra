@@ -1,12 +1,12 @@
 import { Navbar }      from '@/components/layout/Navbar'
 import { ProductCard } from '@/components/products/ProductCard'
-import { getFeaturedProducts, getCategories } from '@/lib/wix'
+import { getFeaturedProducts, getCategories } from '@/lib/products'
 
-// Dynamic — data fetched at request time (avoids build-time Wix auth)
+// Dynamic — best sellers are read from the database at request time
 export const dynamic = 'force-dynamic'
 
 export default async function HomePage() {
-  // Parallel fetch — gracefully degrade if Wix isn't seeded yet
+  // Parallel fetch — gracefully degrade if the database isn't synced yet
   const [products, categories] = await Promise.all([
     getFeaturedProducts().catch(() => []),
     getCategories().catch(() => []),
@@ -77,7 +77,7 @@ export default async function HomePage() {
               ))}
             </div>
           ) : (
-            /* Empty state while Wix CMS is being seeded */
+            /* Empty state until the first sync has run */
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
               {Array.from({ length: 8 }).map((_, i) => (
                 <div key={i} className="rounded-xl border border-[var(--bg-border)] bg-[var(--bg-card)] overflow-hidden">

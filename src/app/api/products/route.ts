@@ -1,15 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getProducts } from '@/lib/wix'
-
-export const runtime = 'edge'
+import { getProducts } from '@/lib/products'
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url)
-  const cursor     = searchParams.get('cursor')     ?? undefined
-  const categoryId = searchParams.get('category')  ?? undefined
+  const cursor   = searchParams.get('cursor')   ?? undefined
+  const category = searchParams.get('category') ?? undefined
 
   try {
-    const data = await getProducts({ cursor, categoryId, limit: 24 })
+    const data = await getProducts({ cursor, category, limit: 24 })
     return NextResponse.json(data, {
       headers: { 'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400' },
     })

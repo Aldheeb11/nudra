@@ -2,7 +2,7 @@
 import { useRef, useState, useCallback } from 'react'
 import { useVirtualizer }  from '@tanstack/react-virtual'
 import { ProductCard }     from './ProductCard'
-import type { Product }    from '@/lib/wix'
+import type { Product }    from '@/lib/products'
 
 interface Props {
   initialProducts: Product[]
