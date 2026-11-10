@@ -5,7 +5,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const base = 'https://nudra-psi.vercel.app'
 
   const categoryUrls: MetadataRoute.Sitemap = CATEGORIES.map((cat) => ({
-    url: `${base}/products?category=${cat.slug}`,
+    url: `${base}/category/${cat.slug}`,
     lastModified: new Date(),
     changeFrequency: 'daily',
     priority: 0.8,
@@ -15,5 +15,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: base,                  lastModified: new Date(), changeFrequency: 'daily', priority: 1 },
     { url: `${base}/products`,    lastModified: new Date(), changeFrequency: 'daily', priority: 0.9 },
     ...categoryUrls,
+    ...['about', 'affiliate-disclosure', 'privacy', 'terms'].map((path) => ({
+      url: `${base}/${path}`, changeFrequency: 'yearly' as const, priority: 0.3,
+    })),
   ]
 }

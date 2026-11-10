@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { CATEGORIES } from '@/lib/catalog'
-import { getProducts } from '@/lib/products'
+import { MAX_QUERY_LENGTH, getProducts, isCategorySlug, normalizeQuery } from '@/lib/products'
 
 const MAX_CURSOR = 10_000 // deep OFFSETs are slow and never reached by real browsing
 
@@ -12,16 +11,20 @@ export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url)
   const cursor   = searchParams.get('cursor')   ?? undefined
   const category = searchParams.get('category') ?? undefined
+  const rawQ     = searchParams.get('q')        ?? undefined
 
   if (cursor !== undefined && (!/^\d{1,6}$/.test(cursor) || Number(cursor) > MAX_CURSOR)) {
     return badRequest('Invalid cursor')
   }
-  if (category !== undefined && !CATEGORIES.some((c) => c.slug === category)) {
+  if (category !== undefined && !isCategorySlug(category)) {
     return badRequest('Unknown category')
+  }
+  if (rawQ !== undefined && rawQ.length > MAX_QUERY_LENGTH) {
+    return badRequest('Query too long')
   }
 
   try {
-    const data = await getProducts({ cursor, category, limit: 24 })
+    const data = await getProducts({ cursor, category, q: normalizeQuery(rawQ), limit: 24 })
     return NextResponse.json(data, {
       headers: { 'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400' },
     })
