@@ -2,7 +2,9 @@
  * Daily AliExpress → Postgres sync, triggered by Vercel Cron (see vercel.json).
  */
 import { createHash, timingSafeEqual } from 'node:crypto'
+import { revalidatePath, revalidateTag } from 'next/cache'
 import { NextRequest, NextResponse } from 'next/server'
+import { PRODUCTS_TAG } from '@/lib/products'
 import { runSync } from '@/lib/sync'
 
 export const maxDuration = 300
@@ -24,6 +26,11 @@ export async function GET(req: NextRequest) {
 
   try {
     const result = await runSync()
+    if (result.upserted > 0 || result.removed > 0) {
+      // Drop cached product reads and every statically generated page built from them
+      revalidateTag(PRODUCTS_TAG, { expire: 0 })
+      revalidatePath('/', 'layout')
+    }
     const failed = Object.values(result.categories).filter((c) => c.error).length
     const status = result.upserted === 0 && failed > 0 ? 502 : 200
     return NextResponse.json({ ok: status === 200, ...result }, { status })

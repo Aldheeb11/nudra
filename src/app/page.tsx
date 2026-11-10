@@ -1,18 +1,17 @@
 import Link from 'next/link'
 import { ProductCard } from '@/components/products/ProductCard'
-import { getFeaturedProducts, getCategories } from '@/lib/products'
+import { fallbackDuringBuild, getFeaturedProducts, getCategories } from '@/lib/products'
 import { SITE_NAME, SITE_URL, jsonLd } from '@/lib/site'
 
 export const metadata = { alternates: { canonical: '/' } }
 
-// Dynamic — best sellers are read from the database at request time
-export const dynamic = 'force-dynamic'
+// Statically generated, refreshed hourly and right after each sync
+export const revalidate = 3600
 
 export default async function HomePage() {
-  // Parallel fetch — gracefully degrade if the database isn't synced yet
   const [products, categories] = await Promise.all([
-    getFeaturedProducts().catch(() => []),
-    getCategories().catch(() => []),
+    getFeaturedProducts().catch(fallbackDuringBuild([])),
+    getCategories(),
   ])
 
   return (

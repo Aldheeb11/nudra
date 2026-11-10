@@ -11,6 +11,12 @@ interface Props {
   params: Promise<{ id: string }>
 }
 
+// Generated on first visit, then served from the cache; refreshed hourly and after each sync
+export const revalidate = 3600
+export function generateStaticParams() {
+  return []
+}
+
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params
   const product = await getProductById(id)
