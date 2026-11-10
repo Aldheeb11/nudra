@@ -1,71 +1,32 @@
-import { Navbar }      from '@/components/layout/Navbar'
-import { ProductGrid } from '@/components/products/ProductGrid'
-import { getProducts, getCategories } from '@/lib/wix'
-
-export const revalidate = 3600 // 1h for product list
+import type { Metadata } from 'next'
+import { permanentRedirect } from 'next/navigation'
+import { ProductListing, listingHref } from '@/components/products/ProductListing'
+import { isCategorySlug, normalizeQuery } from '@/lib/products'
+import { pageMetadata } from '@/lib/site'
 
 interface Props {
-  searchParams: Promise<{ category?: string; cursor?: string }>
+  searchParams: Promise<{ category?: string | string[]; q?: string | string[] }>
+}
+
+const first = (v?: string | string[]) => (Array.isArray(v) ? v[0] : v)
+
+export async function generateMetadata({ searchParams }: Props): Promise<Metadata> {
+  const q = normalizeQuery(first((await searchParams).q))
+  if (q) return pageMetadata({ title: `نتائج البحث عن «${q}»`, path: '/products', noIndex: true })
+  return pageMetadata({
+    title:       'جميع المنتجات',
+    description: 'تصفّح كل منتجات AliExpress الأكثر مبيعاً مرتبة حسب المبيعات، بأسعار محدّثة يومياً.',
+    path:        '/products',
+  })
 }
 
 export default async function ProductsPage({ searchParams }: Props) {
-  const { category } = await searchParams
+  const sp = await searchParams
+  const q = normalizeQuery(first(sp.q))
 
-  const [{ products, nextCursor }, categories] = await Promise.all([
-    getProducts({ categoryId: category, limit: 24 }),
-    getCategories(),
-  ])
+  // Legacy ?category=slug links → /category/slug
+  const legacyCategory = first(sp.category)
+  if (legacyCategory && isCategorySlug(legacyCategory)) permanentRedirect(listingHref(legacyCategory, q))
 
-  return (
-    <>
-      <Navbar />
-      <main className="mx-auto max-w-6xl px-4 pb-16">
-
-        <div className="py-8 flex items-center justify-between">
-          <h1 className="text-xl font-bold text-[var(--text)]">
-            {category
-              ? categories.find(c => c.slug === category)?.name ?? 'املمنتجات'
-              : 'جميع المنتجاڪ'}
-          </h1>
-          <span className="text-xs text-[var(--muted)]">
-            {products.length}+ منتج
-          </span>
-        </div>
-
-        {/* Category filter chips */}
-        <div className="flex gap-2 overflow-x-auto pb-4 mb-6">
-          <a
-            href="/products"
-            className={`shrink-0 px-3 py-1.5 rounded-lg text-xs border transition-all ${
-              !category
-                ? 'border-[var(--accent)] text-[var(--accent)] bg-[var(--accent)]/10'
-                : 'border-[var(--bg-border)] text-[var(--muted)] bg-[var(--bg-card)]'
-            }`}
-          >
-            الكل
-          </a>
-          {categories.map(cat => (
-            <a
-              key={cat._id}
-              href={`/products?category=${cat.slug}`}
-              className={`shrink-0 px-3 py-1.5 rounded-lg text-xs border transition-all ${
-                category === cat.slug
-                  ? 'border-[var(--accent)] text-[var(--accent)] bg-[var(--accent)]/10'
-                  : 'border-[var(--bg-border)] text-[var(--muted)] bg-[var(--bg-card)]'
-              }`}
-            >
-              {cat.name}
-            </a>
-          ))}
-        </div>
-
-        {/* Virtual scroll product grid */}
-        <ProductGrid
-          initialProducts={products}
-          initialCursor={nextCursor}
-          categoryId={category}
-        />
-      </main>
-    </>
-  )
+  return <ProductListing q={q} />
 }

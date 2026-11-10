@@ -1,36 +1,86 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Nudra
 
-## Getting Started
+منصة عربية لاكتشاف منتجات AliExpress الأكثر مبيعاً. الموقع يعرض المنتجات فقط؛ الشراء يتم على AliExpress عبر روابط إحالة.
 
-First, run the development server:
+مبني على Next.js 16 (App Router) و React 19 و Tailwind 4 و Postgres.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+## كيف يعمل
+
+```
+AliExpress Affiliate API ──(/api/sync يومياً)──▶ Postgres ──▶ الصفحات
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+- **المزامنة**: Vercel Cron يستدعي `/api/sync` يومياً الساعة 03:00 UTC (`vercel.json`). لكل تصنيف تُجلب المنتجات الأكثر مبيعاً وتُحفظ في جدول `products`، وتُحذف المنتجات التي لم تظهر منذ 7 أيام.
+- **القراءة**: الصفحات تقرأ من Postgres عبر `src/lib/products.ts` مع كاش لمدة ساعة يُمسح بعد كل مزامنة.
+- **بدون `DATABASE_URL`**: يعرض الموقع كتالوجاً تجريبياً من 6 منتجات (للتطوير المحلي فقط).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## التشغيل محلياً
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+يتطلب Node.js 22 أو أحدث.
 
-## Learn More
+```bash
+npm install
+cp .env.example .env.local   # اختياري: بدونه يعمل الموقع على الكتالوج التجريبي
+npm run dev
+```
 
-To learn more about Next.js, take a look at the following resources:
+ثم افتح http://localhost:3000
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## متغيرات البيئة
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+| المتغير | مطلوب | الوصف |
+| --- | --- | --- |
+| `DATABASE_URL` | للإنتاج | رابط Postgres (النسخة pooled في Neon أو Supabase) |
+| `ALIEXPRESS_APP_KEY` | للمزامنة | مفتاح التطبيق من AliExpress Open Platform |
+| `ALIEXPRESS_APP_SECRET` | للمزامنة | السر المستخدم لتوقيع الطلبات |
+| `ALIEXPRESS_TRACKING_ID` | للمزامنة | معرّف التتبع لروابط الإحالة |
+| `CRON_SECRET` | للمزامنة | يحمي `/api/sync`؛ بدونه يرفض المسار كل الطلبات |
+| `ALIEXPRESS_LANGUAGE` | لا | لغة العناوين، الافتراضي `AR` |
+| `ALIEXPRESS_SHIP_TO` | لا | بلد الشحن، الافتراضي `AE` |
+| `ALIEXPRESS_PAGES_PER_CATEGORY` | لا | عدد الصفحات (50 منتجاً) لكل تصنيف، الافتراضي `2` |
+| `NEXT_PUBLIC_SITE_URL` | لا | دومين الموقع لوسوم SEO؛ يُكتشف تلقائياً على Vercel |
+| `CONTACT_EMAIL` | لا | يفعّل صفحة «تواصل معنا» ورابطها في التذييل |
 
-## Deploy on Vercel
+## تشغيل المزامنة يدوياً
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+الجدول يُنشأ تلقائياً عند أول مزامنة.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```bash
+curl -H "Authorization: Bearer $CRON_SECRET" https://<your-domain>/api/sync
+```
+
+الرد يعرض عدد المنتجات المحفوظة لكل تصنيف وأي خطأ أرجعه AliExpress.
+
+## الأوامر
+
+| الأمر | الوظيفة |
+| --- | --- |
+| `npm run dev` | خادم التطوير |
+| `npm run build` | بناء الإنتاج |
+| `npm run lint` | ESLint |
+| `npm test` | الاختبارات (Vitest) |
+| `npm run typecheck` | فحص الأنواع (بعد `build` أو `dev` لتوليد أنواع المسارات) |
+
+## بنية المشروع
+
+```
+src/app/                  الصفحات ومسارات الـAPI
+  api/products/           صفحات المنتجات للتمرير اللانهائي
+  api/sync/               مزامنة AliExpress (cron)
+  category/[slug]/        صفحة التصنيف
+  products/               كل المنتجات والبحث، و [id] لصفحة المنتج
+src/components/           الشريط العلوي، التذييل، بطاقة وشبكة المنتجات
+src/lib/
+  aliexpress.ts           عميل الـAPI الموقّع وربط التصنيفات
+  sync.ts                 منطق المزامنة
+  db.ts                   اتصال Postgres وإنشاء الجدول
+  products.ts             طبقة القراءة والكاش
+  catalog.ts              التصنيفات والكتالوج التجريبي
+  site.ts                 إعدادات الموقع ووسوم SEO
+tests/                    اختبارات Vitest
+```
+
+## إضافة تصنيف
+
+1. أضف التصنيف إلى `CATEGORIES` في `src/lib/catalog.ts`.
+2. أضف أرقام تصنيفات AliExpress المقابلة له إلى `ALI_CATEGORY_IDS` في `src/lib/aliexpress.ts`.

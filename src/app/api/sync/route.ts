@@ -1,27 +1,41 @@
 /**
- * Vercel Cron Job endpoint for daily sync
- * Add to vercel.json:
- *   "crons": [{ "path": "/api/sync", "schedule": "0 3 * * *" }]
+ * Daily AliExpress → Postgres sync, triggered by Vercel Cron (see vercel.json).
  */
+import { createHash, timingSafeEqual } from 'node:crypto'
+import { revalidatePath, revalidateTag } from 'next/cache'
 import { NextRequest, NextResponse } from 'next/server'
+import { PRODUCTS_TAG } from '@/lib/products'
+import { runSync } from '@/lib/sync'
 
-export const runtime = 'nodejs'
-export const maxDuration = 300 // 5 min Vercel Pro limit
+export const maxDuration = 300
+
+const sha256 = (v: string) => createHash('sha256').update(v).digest()
+
+/** Constant-time check; fails closed when CRON_SECRET is not configured */
+function isAuthorized(req: NextRequest): boolean {
+  const secret = process.env.CRON_SECRET
+  if (!secret) return false
+  const given = req.headers.get('authorization') ?? ''
+  return timingSafeEqual(sha256(given), sha256(`Bearer ${secret}`))
+}
 
 export async function GET(req: NextRequest) {
-  // Security: verify Vercel cron secret
-  const authHeader = req.headers.get('authorization')
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+  if (!isAuthorized(req)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
   try {
-    // Dynamic import to avoid bundling Bull in edge runtime
-    const { startSync } = await import('../../../../jobs/sync')
-    await startSync()
-    return NextResponse.json({ ok: true, started: new Date().toISOString() })
+    const result = await runSync()
+    if (result.upserted > 0 || result.removed > 0) {
+      // Drop cached product reads and every statically generated page built from them
+      revalidateTag(PRODUCTS_TAG, { expire: 0 })
+      revalidatePath('/', 'layout')
+    }
+    const failed = Object.values(result.categories).filter((c) => c.error).length
+    const status = result.upserted === 0 && failed > 0 ? 502 : 200
+    return NextResponse.json({ ok: status === 200, ...result }, { status })
   } catch (err) {
     console.error('[/api/sync]', err)
-    return NextResponse.json({ error: String(err) }, { status: 500 })
+    return NextResponse.json({ error: 'Sync failed' }, { status: 500 })
   }
 }
